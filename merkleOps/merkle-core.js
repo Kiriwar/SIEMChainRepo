@@ -56,6 +56,25 @@ class SubMerkleTree {
     this.root = null;
   }
 
+  // Generate concatenated hash file data
+  generateConcatHashData(epochId) {
+    const hashEntries = this.logs.map(log => ({
+      logId: log.logId,
+      hashValue: log.hash
+    }));
+    
+    // Concatenate all hashes
+    const concatenatedHashes = this.logs.map(log => log.hash).join('');
+    const concatHash = hash(concatenatedHashes);
+    
+    return {
+      entries: hashEntries,
+      epochId: epochId,
+      logType: this.logType,
+      hashValue: concatHash
+    };
+  }
+
   // Add a log entry (will need to rebuild tree)
   addLog(logEntry) {
     if (logEntry.logType !== this.logType) {

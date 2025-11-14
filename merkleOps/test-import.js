@@ -36,6 +36,14 @@ MerkleImporter.importAndSave(
   merkletreePath
 );
 
+console.log('\n=== SAVING CONCAT HASH FILES ===\n');
+
+const { MerklePersistence } = require('./merkle-persistence');
+const concatResults = MerklePersistence.saveConcatHashFiles(
+  result.tree, 
+  epoch,
+  './concat_hashes'
+);
 
 // ===========================
 // Test 2: Search Imported Logs

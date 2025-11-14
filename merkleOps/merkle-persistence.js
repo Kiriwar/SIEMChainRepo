@@ -7,6 +7,47 @@ const { LogEntry, TopLevelMerkleTree } = require('./merkle-core');
 
 class MerklePersistence {
   
+  // Save concatenated hash file for each sub-tree
+static saveConcatHashFiles(topLevelTree, epochId, outputDir = './concat_hashes') {
+  const { hash } = require('./merkle-core');
+  
+  // Create directory if not exists
+  if (!fs.existsSync(outputDir)) {
+    fs.mkdirSync(outputDir, { recursive: true });
+  }
+  
+  const results = [];
+  
+  for (const [logType, subTree] of topLevelTree.subTrees.entries()) {
+    const data = subTree.generateConcatHashData(epochId);
+    
+    // Format: epoch_logtype_epochid
+    const filename = `epoch_${logType}_${epochId}.txt`;
+    const filepath = path.join(outputDir, filename);
+    
+    // Create file content
+    let content = '';
+    data.entries.forEach(entry => {
+      content += `{log id: ${entry.logId}, hash value: ${entry.hashValue}}\n`;
+    });
+    content += `\nepoch id: ${data.epochId}\n`;
+    content += `log type: ${data.logType}\n`;
+    content += `hash value: ${data.hashValue}\n`;
+    
+    fs.writeFileSync(filepath, content, 'utf8');
+    
+    results.push({
+      logType,
+      filepath,
+      epochId,
+      concatHash: data.hashValue,
+      logCount: data.entries.length
+    });
+  }
+  
+  return results;
+}
+
   // Save entire tree to a single JSON file
   static saveToFile(topLevelTree, filepath) {
     const data = this.serialize(topLevelTree);
