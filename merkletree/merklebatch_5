@@ -1,0 +1,278 @@
+{
+  "version": "1.0",
+  "timestamp": "2025-11-12T03:20:22.637Z",
+  "topLevelRootHash": "c8e7a65491cc7271a422c183213a290d14226b5648cb293939db4dd2ac9b544d",
+  "subTrees": {
+    "api": {
+      "logType": "api",
+      "logs": [
+        {
+          "logId": "log-51",
+          "timestamp": 1762917619835,
+          "logType": "api",
+          "metadata": {
+            "message": "Single log 51"
+          },
+          "hash": "0cdf13adf5a7c75edc8fd73fbf4b878031a6acaa46ef0ab6d4bc0e93d4bbc32f"
+        },
+        {
+          "logId": "log-54",
+          "timestamp": 1762917620161,
+          "logType": "api",
+          "metadata": {
+            "message": "Single log 54"
+          },
+          "hash": "fb716e83e273c5922834f75a0b47ee71730cfd957358c3f761e107a5259d5b0d"
+        },
+        {
+          "logId": "log-57",
+          "timestamp": 1762917620487,
+          "logType": "api",
+          "metadata": {
+            "message": "Single log 57"
+          },
+          "hash": "13dd901266cfdac62712b1a5105945b6fafa2453aa610231bf70af9dd81bb2ec"
+        },
+        {
+          "logId": "log-60",
+          "timestamp": 1762917620806,
+          "logType": "api",
+          "metadata": {
+            "message": "Single log 60"
+          },
+          "hash": "4d06df037c02d5698b1de8917cace273121ca9472f41202bfe3b6c314d0c466c"
+        },
+        {
+          "logId": "log-63",
+          "timestamp": 1762917621132,
+          "logType": "api",
+          "metadata": {
+            "message": "Single log 63"
+          },
+          "hash": "c0add6cfa524f9ee60e940e8e37732afd75249725a05886676fbd1f1008ead6d"
+        },
+        {
+          "logId": "log-66",
+          "timestamp": 1762917621466,
+          "logType": "api",
+          "metadata": {
+            "message": "Single log 66"
+          },
+          "hash": "93d55bed1e3089e996c13f7ba6c97e487f4cf47bad4d8d0cdb7a50a2959894ba"
+        },
+        {
+          "logId": "log-69",
+          "timestamp": 1762917621793,
+          "logType": "api",
+          "metadata": {
+            "message": "Single log 69"
+          },
+          "hash": "22df0c888fefe5c952b5c6f863e303e04b593bc81c6586ed6d495f5a80ee56ef"
+        },
+        {
+          "logId": "log-72",
+          "timestamp": 1762917622111,
+          "logType": "api",
+          "metadata": {
+            "message": "Single log 72"
+          },
+          "hash": "8cdede5bc9b52c224dc2e57c0e67b1538c04bfdce1d7a0764ba48a272f5fc6f4"
+        },
+        {
+          "logId": "log-75",
+          "timestamp": 1762917622437,
+          "logType": "api",
+          "metadata": {
+            "message": "Single log 75"
+          },
+          "hash": "9a0df28b5821ba44491df2ee7fa9981e25ced797d7f743162fad28c333b0171a"
+        }
+      ],
+      "rootHash": "712a61afb2efc2822c640168c79b04c05efb0d1ce211574d428d5f92eeb5843f"
+    },
+    "firewall": {
+      "logType": "firewall",
+      "logs": [
+        {
+          "logId": "log-52",
+          "timestamp": 1762917619940,
+          "logType": "firewall",
+          "metadata": {
+            "message": "Single log 52"
+          },
+          "hash": "f4c5fc5d8d16ae153d1a54379986bde0bc6b63f528d0fefc7ca7e2193e6e8010"
+        },
+        {
+          "logId": "log-55",
+          "timestamp": 1762917620267,
+          "logType": "firewall",
+          "metadata": {
+            "message": "Single log 55"
+          },
+          "hash": "1a13557f7f045b46d7c71921ba08131e47960ece0a082adddcee8cc25fa62d6e"
+        },
+        {
+          "logId": "log-58",
+          "timestamp": 1762917620594,
+          "logType": "firewall",
+          "metadata": {
+            "message": "Single log 58"
+          },
+          "hash": "3f43607fa3632a4b263553d144ed133d571c99acecd52ffaee62484f30cddeef"
+        },
+        {
+          "logId": "log-61",
+          "timestamp": 1762917620911,
+          "logType": "firewall",
+          "metadata": {
+            "message": "Single log 61"
+          },
+          "hash": "31999a8b6cc8873f396d769e82ac46dfbd6effd4f85eb560fe91e1448ae78e8a"
+        },
+        {
+          "logId": "log-64",
+          "timestamp": 1762917621244,
+          "logType": "firewall",
+          "metadata": {
+            "message": "Single log 64"
+          },
+          "hash": "c3e5ca6f85bf2f29efbcc119695e1e9186a94d813a49f6ae12c5afd940f9ecdb"
+        },
+        {
+          "logId": "log-67",
+          "timestamp": 1762917621579,
+          "logType": "firewall",
+          "metadata": {
+            "message": "Single log 67"
+          },
+          "hash": "6483185cef623fc82d87a334d7e2908e45fd5477d3ac607e41ad451f288e795f"
+        },
+        {
+          "logId": "log-70",
+          "timestamp": 1762917621896,
+          "logType": "firewall",
+          "metadata": {
+            "message": "Single log 70"
+          },
+          "hash": "41184c759ce034945c1c19f48eff68f8b3d2c72d1a886ce2eed52574322ace60"
+        },
+        {
+          "logId": "log-73",
+          "timestamp": 1762917622215,
+          "logType": "firewall",
+          "metadata": {
+            "message": "Single log 73"
+          },
+          "hash": "7eaf77144e31c9a05819bde6719166648af6f14939b972ba07de9742349f5efa"
+        },
+        {
+          "logId": "log-76",
+          "timestamp": 1762917622549,
+          "logType": "firewall",
+          "metadata": {
+            "message": "Single log 76"
+          },
+          "hash": "75b7d294831fe0620da90f9fd7e02cd272bc9c6dc3bef991e263f6c8b29ec4e3"
+        }
+      ],
+      "rootHash": "6d61062b77ce4dcdb42043e6804c54e6a7cccab7ec26534af6c09eef11d8d557"
+    },
+    "auth": {
+      "logType": "auth",
+      "logs": [
+        {
+          "logId": "log-53",
+          "timestamp": 1762917620055,
+          "logType": "auth",
+          "metadata": {
+            "message": "Single log 53"
+          },
+          "hash": "78f90ed00e9f4fe6274add83ddc603cc6c73602b971f91d53d8e341ad7ceacf3"
+        },
+        {
+          "logId": "log-56",
+          "timestamp": 1762917620382,
+          "logType": "auth",
+          "metadata": {
+            "message": "Single log 56"
+          },
+          "hash": "5c41500a027111c2bdf3641076c4bdc2c5ee165176cd7ac66dee62b16a641363"
+        },
+        {
+          "logId": "log-59",
+          "timestamp": 1762917620695,
+          "logType": "auth",
+          "metadata": {
+            "message": "Single log 59"
+          },
+          "hash": "e8cd0c121d3b5014113340520b62bc667c8ab02cdd1621764537933724323d03"
+        },
+        {
+          "logId": "log-62",
+          "timestamp": 1762917621021,
+          "logType": "auth",
+          "metadata": {
+            "message": "Single log 62"
+          },
+          "hash": "1986fa9fc9f14bf54addcebcbb1df8dd143da09a1c00ed86292edcaf8f053bdd"
+        },
+        {
+          "logId": "log-65",
+          "timestamp": 1762917621355,
+          "logType": "auth",
+          "metadata": {
+            "message": "Single log 65"
+          },
+          "hash": "3ebe4f190d3e4cadca9f38def94cf4307cd671567601c3276f43ddd7aee6dc9c"
+        },
+        {
+          "logId": "log-68",
+          "timestamp": 1762917621687,
+          "logType": "auth",
+          "metadata": {
+            "message": "Single log 68"
+          },
+          "hash": "78fa623768a9395997e63b72b57dc15c98e812c198ee564a62104fe7326195b9"
+        },
+        {
+          "logId": "log-71",
+          "timestamp": 1762917622000,
+          "logType": "auth",
+          "metadata": {
+            "message": "Single log 71"
+          },
+          "hash": "bea9ce160ac4afcf9bd6aefc61718ec66496d884d4072cefcecbe4af1df4cad8"
+        },
+        {
+          "logId": "log-74",
+          "timestamp": 1762917622327,
+          "logType": "auth",
+          "metadata": {
+            "message": "Single log 74"
+          },
+          "hash": "4e9455e33acd067035574402a5c49e1fcc289470cdf6d85c06347f48802c4dee"
+        }
+      ],
+      "rootHash": "370c4b2865af5779c00f9668a78920bbca5a5b6be9133f50a183c45c3fa70834"
+    }
+  },
+  "statistics": {
+    "totalLogs": 26,
+    "subTreeCount": 3,
+    "rootHash": "c8e7a65491cc7271a422c183213a290d14226b5648cb293939db4dd2ac9b544d",
+    "subTrees": {
+      "api": {
+        "logCount": 9,
+        "rootHash": "712a61afb2efc2822c640168c79b04c05efb0d1ce211574d428d5f92eeb5843f"
+      },
+      "firewall": {
+        "logCount": 9,
+        "rootHash": "6d61062b77ce4dcdb42043e6804c54e6a7cccab7ec26534af6c09eef11d8d557"
+      },
+      "auth": {
+        "logCount": 8,
+        "rootHash": "370c4b2865af5779c00f9668a78920bbca5a5b6be9133f50a183c45c3fa70834"
+      }
+    }
+  }
+}

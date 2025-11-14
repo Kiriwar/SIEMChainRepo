@@ -1,0 +1,260 @@
+{
+  "version": "1.0",
+  "timestamp": "2025-11-12T03:20:25.329Z",
+  "topLevelRootHash": "bccd9c4aa5a5dd39868c2740fcf7a46ccc2aa8749c940800d4a0cfc7645b0859",
+  "subTrees": {
+    "auth": {
+      "logType": "auth",
+      "logs": [
+        {
+          "logId": "log-77",
+          "timestamp": 1762917622651,
+          "logType": "auth",
+          "metadata": {
+            "message": "Single log 77"
+          },
+          "hash": "f8774a566158742a8d7c384249f7b0978f1ac2377f56e2e35d09545374f28ab9"
+        },
+        {
+          "logId": "log-80",
+          "timestamp": 1762917622964,
+          "logType": "auth",
+          "metadata": {
+            "message": "Single log 80"
+          },
+          "hash": "e082454388cbc460e2564cccaaba2cf3148fe696132ff0cf4455996a6e9e11e6"
+        },
+        {
+          "logId": "log-83",
+          "timestamp": 1762917623281,
+          "logType": "auth",
+          "metadata": {
+            "message": "Single log 83"
+          },
+          "hash": "72eb3d6f71fdcc130e4399fede252e128cb4cc67c05dfe9d7e33a6776f567dbc"
+        },
+        {
+          "logId": "log-86",
+          "timestamp": 1762917623605,
+          "logType": "auth",
+          "metadata": {
+            "message": "Single log 86"
+          },
+          "hash": "8e43217cc455101d36b679ff1a500fff3ebcdc494a29c39b9bb062892566065d"
+        },
+        {
+          "logId": "log-89",
+          "timestamp": 1762917623925,
+          "logType": "auth",
+          "metadata": {
+            "message": "Single log 89"
+          },
+          "hash": "dba4b8e67c96dea400e4b5f3934ca853bf1d674ae4a516e9100a4651a49af803"
+        },
+        {
+          "logId": "log-92",
+          "timestamp": 1762917624243,
+          "logType": "auth",
+          "metadata": {
+            "message": "Single log 92"
+          },
+          "hash": "858de288d414d1f4060bb97da2916e649c8ec8374dd605516b77632127986850"
+        },
+        {
+          "logId": "log-95",
+          "timestamp": 1762917624576,
+          "logType": "auth",
+          "metadata": {
+            "message": "Single log 95"
+          },
+          "hash": "912f98d2127309242a9c1a88928eb0a3bb87b3f89f5e8b9b4049984040f5ce2b"
+        },
+        {
+          "logId": "log-98",
+          "timestamp": 1762917624902,
+          "logType": "auth",
+          "metadata": {
+            "message": "Single log 98"
+          },
+          "hash": "471e6ff8885d5d4a3e7fdd6fde5f14422a11d24782c0c555f5b488096383eb9f"
+        }
+      ],
+      "rootHash": "648604cdced1bf486e007cddd5618553a8920bd2c0dcf6d16834bae0977a0d53"
+    },
+    "api": {
+      "logType": "api",
+      "logs": [
+        {
+          "logId": "log-78",
+          "timestamp": 1762917622761,
+          "logType": "api",
+          "metadata": {
+            "message": "Single log 78"
+          },
+          "hash": "61f6b52d3092504ab84207cd23ea4a4b4880ca269f161124446d3c55602f5f33"
+        },
+        {
+          "logId": "log-81",
+          "timestamp": 1762917623068,
+          "logType": "api",
+          "metadata": {
+            "message": "Single log 81"
+          },
+          "hash": "986d05b9ab097ff7004e9434bae5c1580bfa51b28bf8f15089a2aea18d1e9e30"
+        },
+        {
+          "logId": "log-84",
+          "timestamp": 1762917623389,
+          "logType": "api",
+          "metadata": {
+            "message": "Single log 84"
+          },
+          "hash": "979d2e3f9ab7d9bd92dc0b1b887b44c672b195f4e3bed8c5c26f961234728c63"
+        },
+        {
+          "logId": "log-87",
+          "timestamp": 1762917623708,
+          "logType": "api",
+          "metadata": {
+            "message": "Single log 87"
+          },
+          "hash": "b2d7e14032713d811521511ac80e491ba9f343d7808bc4cb145e420096c55344"
+        },
+        {
+          "logId": "log-90",
+          "timestamp": 1762917624028,
+          "logType": "api",
+          "metadata": {
+            "message": "Single log 90"
+          },
+          "hash": "8a23b346d61cfb4df6996bf07455579788a7abe28f8c7706bfbc3137f34521f8"
+        },
+        {
+          "logId": "log-93",
+          "timestamp": 1762917624362,
+          "logType": "api",
+          "metadata": {
+            "message": "Single log 93"
+          },
+          "hash": "ca5bb974d83c851b230771cefceff0ad9d2b65a0ad6ef43935deb7d4d43834ee"
+        },
+        {
+          "logId": "log-96",
+          "timestamp": 1762917624682,
+          "logType": "api",
+          "metadata": {
+            "message": "Single log 96"
+          },
+          "hash": "8317ae229dfafc00238b1e653b9c92214e3c86c17b280460831ac32824108d8f"
+        },
+        {
+          "logId": "log-99",
+          "timestamp": 1762917625013,
+          "logType": "api",
+          "metadata": {
+            "message": "Single log 99"
+          },
+          "hash": "1515b9a5679c931faa4ace0cb392f9cebbb9fc268b906b92e3c97efd6076e152"
+        }
+      ],
+      "rootHash": "80fa862725680bb765a553205fa9318d4cc85fcf49af5f420537857314938990"
+    },
+    "firewall": {
+      "logType": "firewall",
+      "logs": [
+        {
+          "logId": "log-79",
+          "timestamp": 1762917622863,
+          "logType": "firewall",
+          "metadata": {
+            "message": "Single log 79"
+          },
+          "hash": "3c4a896f3c5323cc8f85c3de46b1062c93f27e226a498aea8cef10817bb4631b"
+        },
+        {
+          "logId": "log-82",
+          "timestamp": 1762917623174,
+          "logType": "firewall",
+          "metadata": {
+            "message": "Single log 82"
+          },
+          "hash": "c6432f8ff65f87228aa47e10bb3c3e21642551db3f88921c5026f502eed517d6"
+        },
+        {
+          "logId": "log-85",
+          "timestamp": 1762917623500,
+          "logType": "firewall",
+          "metadata": {
+            "message": "Single log 85"
+          },
+          "hash": "b9c432b10b983dec324cea09271ca4ea8390bd39198ba916b5cbc46b9485cbca"
+        },
+        {
+          "logId": "log-88",
+          "timestamp": 1762917623812,
+          "logType": "firewall",
+          "metadata": {
+            "message": "Single log 88"
+          },
+          "hash": "680d80e828dc78a7f4f2c60a65565d247b05afbf1bb16863938d540fc854674e"
+        },
+        {
+          "logId": "log-91",
+          "timestamp": 1762917624139,
+          "logType": "firewall",
+          "metadata": {
+            "message": "Single log 91"
+          },
+          "hash": "f91c34e5bfa82b733e302638480c99e8919177e0d22aecd624c0732e95d8366c"
+        },
+        {
+          "logId": "log-94",
+          "timestamp": 1762917624466,
+          "logType": "firewall",
+          "metadata": {
+            "message": "Single log 94"
+          },
+          "hash": "e7e2d1af1cb238b60dcb47e16fb8770965e4825d223dfa3082749cacb94fd577"
+        },
+        {
+          "logId": "log-97",
+          "timestamp": 1762917624792,
+          "logType": "firewall",
+          "metadata": {
+            "message": "Single log 97"
+          },
+          "hash": "6e41766c917eda69ca9339237f43b51f798ccd570ddcca27349a96cf00977914"
+        },
+        {
+          "logId": "log-100",
+          "timestamp": 1762917625118,
+          "logType": "firewall",
+          "metadata": {
+            "message": "Single log 100"
+          },
+          "hash": "3951b59265143a455d95d20935c390ee258b01e8c45df978fc07d70dfb8b146e"
+        }
+      ],
+      "rootHash": "ecafe9cea40968b16b443a83f5f5fcc272588bf7882b2f3eb364ef2f3db62359"
+    }
+  },
+  "statistics": {
+    "totalLogs": 24,
+    "subTreeCount": 3,
+    "rootHash": "bccd9c4aa5a5dd39868c2740fcf7a46ccc2aa8749c940800d4a0cfc7645b0859",
+    "subTrees": {
+      "auth": {
+        "logCount": 8,
+        "rootHash": "648604cdced1bf486e007cddd5618553a8920bd2c0dcf6d16834bae0977a0d53"
+      },
+      "api": {
+        "logCount": 8,
+        "rootHash": "80fa862725680bb765a553205fa9318d4cc85fcf49af5f420537857314938990"
+      },
+      "firewall": {
+        "logCount": 8,
+        "rootHash": "ecafe9cea40968b16b443a83f5f5fcc272588bf7882b2f3eb364ef2f3db62359"
+      }
+    }
+  }
+}
