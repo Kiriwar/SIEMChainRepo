@@ -123,6 +123,44 @@ public class LogServer {
     }
     
     /**
+    * Extract field value from simple JSON string
+    */
+    private String extractJsonField(String json, String fieldName) {
+        try {
+            String searchKey = "\"" + fieldName + "\"";
+            int start = json.indexOf(searchKey);
+            if (start == -1) return null;
+            
+            int colonPos = json.indexOf(":", start);
+            int valueStart = colonPos + 1;
+            
+            // Skip whitespace
+            while (valueStart < json.length() && 
+                (json.charAt(valueStart) == ' ' || json.charAt(valueStart) == '\t')) {
+                valueStart++;
+            }
+            
+            // Check if string or number
+            if (json.charAt(valueStart) == '"') {
+                valueStart++;
+                int valueEnd = json.indexOf("\"", valueStart);
+                return json.substring(valueStart, valueEnd);
+            } else {
+                int valueEnd = valueStart;
+                while (valueEnd < json.length() && 
+                    (Character.isDigit(json.charAt(valueEnd)) || 
+                        json.charAt(valueEnd) == '.' || 
+                        json.charAt(valueEnd) == '-')) {
+                    valueEnd++;
+                }
+                return json.substring(valueStart, valueEnd).trim().replaceAll("[,}\\s].*", "");
+            }
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    /**
      * Parse logs from packet (supports single log or array)
      */
     private List<String> parseLogsFromPacket(String packetContent) {
@@ -245,7 +283,6 @@ public class LogServer {
         }
         
         hashContent.append("]\n");
-        hashContent.append("HashBatch: ").append(concatenatedHash).append("\n");
         
         Files.write(Paths.get(hashFilename), hashContent.toString().getBytes());
         
@@ -365,6 +402,99 @@ public class LogServer {
                 }
             }
         });
+
+    // Add this new context AFTER the /flush endpoint
+    server.createContext("/verify", new HttpHandler() {
+    @Override
+    public void handle(HttpExchange exchange) throws IOException {
+        if ("POST".equals(exchange.getRequestMethod())) {
+            try {
+                InputStream is = exchange.getRequestBody();
+                String requestBody = new String(is.readAllBytes());
+                
+                System.out.println("Received verification request: " + requestBody);
+                
+                // NEW: Parse rawLog from request
+                // Expected format: {"rawLog": {"id":25,"timestamp":...,"Type":"firewall",...}}
+                String rawLogJson = extractRawLog(requestBody);
+                
+                if (rawLogJson == null) {
+                    throw new Exception("Request must contain 'rawLog' field");
+                }
+                
+                // Step 1: Call coarse-grained verification with raw log
+                String coarseResult = callNodeScriptWithRawLog("coarse", rawLogJson);
+                JSONResult coarse = parseJSON(coarseResult);
+                
+                System.out.println("Coarse result: " + coarseResult);
+                
+                String response;
+                
+                if (coarse.valid) {
+                    // Coarse-grained passed - log is valid
+                    response = String.format(
+                        "{\"valid\":true,\"method\":\"coarse\",\"message\":\"Raw log verified (concat hash match)\"}"
+                    );
+                } else {
+                    // Coarse-grained failed - send Alert 1
+                    if (coarse.alert != null) {
+                        sendAlert(coarse.alert);
+                        System.out.println("\n🚨 ALERT 1 SENT: Raw log hash mismatch - concat hash mismatch");
+                    }
+                    
+                    // Extract metadata for fine-grained check
+                    String logId = extractJsonField(coarseResult, "logId");
+                    String logType = extractJsonField(coarseResult, "logType");
+                    String epochIdStr = extractJsonField(coarseResult, "epochId");
+                    
+                    if (logId != null && logType != null && epochIdStr != null) {
+                        int epochId = Integer.parseInt(epochIdStr);
+                        
+                        // Step 2: Call fine-grained verification
+                        String fineResult = callNodeScript("fine", logId, logType, epochId);
+                        JSONResult fine = parseJSON(fineResult);
+                        
+                        System.out.println("Fine result: " + fineResult);
+                        
+                        if (fine.valid) {
+                            // Merkle proof valid but concat failed (shouldn't happen normally)
+                            response = String.format(
+                                "{\"valid\":true,\"method\":\"fine\",\"message\":\"Verified by Merkle proof (anomaly detected in concat)\"}"
+                            );
+                        } else {
+                            // Actually tampered - send Alert 2
+                            if (fine.alert != null) {
+                                sendAlert(fine.alert);
+                                System.out.println("\n🚨 ALERT 2 SENT: Specific log tampered (Merkle proof failed)");
+                            }
+                            response = String.format(
+                                "{\"valid\":false,\"method\":\"fine\",\"message\":\"CRITICAL: Log has been tampered\",\"logId\":\"%s\"}",
+                                logId
+                            );
+                        }
+                    } else {
+                        response = String.format(
+                            "{\"valid\":false,\"error\":\"Could not extract metadata from coarse verification result\"}"
+                        );
+                    }
+                }
+                
+                exchange.sendResponseHeaders(200, response.length());
+                OutputStream os = exchange.getResponseBody();
+                os.write(response.getBytes());
+                os.close();
+                
+            } catch (Exception e) {
+                e.printStackTrace();
+                String response = "{\"error\":\"" + e.getMessage() + "\"}";
+                exchange.sendResponseHeaders(500, response.length());
+                OutputStream os = exchange.getResponseBody();
+                os.write(response.getBytes());
+                os.close();
+            }
+        }
+    }
+    });
         
         server.setExecutor(null);
         server.start();
@@ -398,12 +528,127 @@ public class LogServer {
         }
     }
 
-/**
- * Call JavaScript file with epoch value
- */
-    private void callJavaScript(int epoch) throws IOException, NoSuchAlgorithmException {
-    ProcessBuilder pb = new ProcessBuilder("node", "merkleOps/test-import.js", String.valueOf(epoch));
+    private String extractRawLog(String requestBody) {
+    try {
+        int start = requestBody.indexOf("\"rawLog\"");
+        if (start == -1) return null;
+        
+        int objectStart = requestBody.indexOf("{", start);
+        if (objectStart == -1) return null;
+        
+        int braceCount = 0;
+        int objectEnd = objectStart;
+        
+        for (int i = objectStart; i < requestBody.length(); i++) {
+            if (requestBody.charAt(i) == '{') braceCount++;
+            if (requestBody.charAt(i) == '}') {
+                braceCount--;
+                if (braceCount == 0) {
+                    objectEnd = i;
+                    break;
+                }
+            }
+        }
+        
+        return requestBody.substring(objectStart, objectEnd + 1);
+    } catch (Exception e) {
+        return null;
+    }
+    }
+
+    private String callNodeScriptWithRawLog(String mode, String rawLogJson) 
+        throws IOException, InterruptedException {
+    
+    ProcessBuilder pb = new ProcessBuilder("node", "merkleOps/verify-log.js", mode);
     pb.redirectErrorStream(true);
+    
+    Process process = pb.start();
+    
+    // Write rawLog to stdin
+    PrintWriter writer = new PrintWriter(process.getOutputStream());
+    writer.println(rawLogJson);
+    writer.flush();
+    writer.close();
+    
+    // Read output
+    BufferedReader reader = new BufferedReader(
+        new InputStreamReader(process.getInputStream())
+    );
+    
+    StringBuilder output = new StringBuilder();
+    String line;
+    while ((line = reader.readLine()) != null) {
+        output.append(line);
+    }
+    
+    process.waitFor();
+    return output.toString();
+}
+
+    class JSONResult {
+    boolean valid;
+    String alert;
+    }
+
+    private JSONResult parseJSON(String json) {
+    JSONResult result = new JSONResult();
+    result.valid = json.contains("\"valid\":true") || json.contains("\"valid\": true");
+    
+    // Extract alert if exists
+    if (json.contains("\"alert\":{")) {
+        int start = json.indexOf("\"alert\":{");
+        int end = findMatchingBrace(json, start + 8);
+        result.alert = json.substring(start + 8, end + 1);
+    }
+    
+    return result;
+    }
+
+    private int findMatchingBrace(String json, int start) {
+        int count = 1;
+        for (int i = start + 1; i < json.length(); i++) {
+            if (json.charAt(i) == '{') count++;
+            if (json.charAt(i) == '}') count--;
+            if (count == 0) return i;
+        }
+        return json.length() - 1;
+    }
+
+
+    private String callNodeScript(String mode, String logId, String logType, int epochId) 
+        throws IOException, InterruptedException {
+    ProcessBuilder pb = new ProcessBuilder(
+        "node", "merkleOps/verify-log.js", mode, logId, logType, String.valueOf(epochId)
+    );
+    pb.redirectErrorStream(true);
+    
+    Process process = pb.start();
+    BufferedReader reader = new BufferedReader(
+        new InputStreamReader(process.getInputStream())
+    );
+    
+    StringBuilder output = new StringBuilder();
+    String line;
+    while ((line = reader.readLine()) != null) {
+        output.append(line);
+    }
+    
+    process.waitFor();
+    return output.toString();
+    }
+
+    private void sendAlert(String alertJson) {
+    System.out.println("\n========== ALERT ==========");
+    System.out.println(alertJson);
+    System.out.println("===========================\n");
+    }
+    
+    /**
+     * Call JavaScript file with epoch value
+     */
+    private void callJavaScript(int epoch) throws IOException, NoSuchAlgorithmException {
+        ProcessBuilder pb = new ProcessBuilder("node", "merkleOps/test-import.js", String.valueOf(epoch));
+        pb.redirectErrorStream(true);
     
     Process process = pb.start();
     
@@ -422,7 +667,7 @@ public class LogServer {
     if (exitCode != 0) {
         throw new Exception("JavaScript execution failed with exit code: " + exitCode);
     }*/
-}
+    }
     
     /**
      * Main method

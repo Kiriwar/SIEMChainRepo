@@ -171,7 +171,7 @@ public class LogClient {
         // Example 1: Send single logs
         System.out.println("\n--- Sending 100 Single Logs ---");
         String Ty = "fail";
-        for (int i = 1; i <= 100; i++) {
+        for (int i = 1; i <= 10; i++) {
 
             switch(i%3){
                 case 0:
