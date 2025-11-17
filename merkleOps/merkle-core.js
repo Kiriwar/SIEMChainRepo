@@ -56,6 +56,24 @@ class SubMerkleTree {
     this.root = null;
   }
 
+  verifyLogWithProof(log, rootHash) {
+    let currentHash = log.hash;
+    
+    if (!log.proofPath) {
+      return false; // No proof path saved
+    }
+    
+    for (const step of log.proofPath) {
+      if (step.position === 'left') {
+        currentHash = combineHashes(step.hash, currentHash);
+      } else {
+        currentHash = combineHashes(currentHash, step.hash);
+      }
+    }
+    
+    return currentHash === rootHash;
+  }
+
   // Generate concatenated hash file data
   generateConcatHashData(epochId) {
     const hashEntries = this.logs.map(log => ({
@@ -163,6 +181,57 @@ class TopLevelMerkleTree {
   constructor() {
     this.subTrees = new Map(); // logType -> SubMerkleTree
     this.root = null;
+  }
+
+  computeRootFromProofs() {
+  const subTreeRoots = [];
+  
+  // Get each sub-tree root from any log's proof
+  for (const [logType, subTree] of this.subTrees.entries()) {
+    if (subTree.logs.length > 0) {
+      const firstLog = subTree.logs[0];
+      if (firstLog.proofPath) {
+        // Compute sub-tree root from first log's proof
+        let hash = firstLog.hash;
+        for (const step of firstLog.proofPath) {
+          if (step.position === 'left') {
+            hash = combineHashes(step.hash, hash);
+          } else {
+            hash = combineHashes(hash, step.hash);
+          }
+          }
+          subTreeRoots.push(hash);
+        }
+      }
+    }
+    
+    // Compute top-level root from sub-tree roots
+    // (similar logic here)
+    return this.computeRootFromHashes(subTreeRoots);
+  }
+
+  computeRootFromHashes(hashes) {
+    if (hashes.length === 0) return null;
+    if (hashes.length === 1) return hashes[0];
+    
+    let currentLevel = [...hashes];
+    
+    // Build tree bottom-up (same as buildTree, but only hashes)
+    while (currentLevel.length > 1) {
+      const nextLevel = [];
+      
+      for (let i = 0; i < currentLevel.length; i += 2) {
+        const left = currentLevel[i];
+        const right = i + 1 < currentLevel.length ? currentLevel[i + 1] : left;
+        
+        const parentHash = combineHashes(left, right);
+        nextLevel.push(parentHash);
+      }
+      
+      currentLevel = nextLevel;
+    }
+    
+    return currentLevel[0];
   }
 
   // Add a sub-tree for a specific log type

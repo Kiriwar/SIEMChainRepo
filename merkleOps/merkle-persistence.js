@@ -4,6 +4,7 @@
 const fs = require('fs');
 const path = require('path');
 const { LogEntry, TopLevelMerkleTree } = require('./merkle-core');
+const { MerkleProofGenerator } = require('./merkle-proof');
 
 class MerklePersistence {
   
@@ -119,30 +120,39 @@ static saveConcatHashFiles(topLevelTree, epochId, outputDir = './concat_hashes')
 
   // Serialize tree to JSON-compatible object
   static serialize(topLevelTree) {
-    const subTreesData = {};
-    
-    for (const [logType, subTree] of topLevelTree.subTrees.entries()) {
-      subTreesData[logType] = {
-        logType: subTree.logType,
-        logs: subTree.logs.map(log => ({
+  const subTreesData = {};
+  
+  for (const [logType, subTree] of topLevelTree.subTrees.entries()) {
+    subTreesData[logType] = {  // ← MISSING! You need to assign to subTreesData
+      logType: subTree.logType,
+      rootHash: subTree.getRootHash(),  // ← MISSING!
+      logs: subTree.logs.map(log => {  // ← MISSING 'logs:' assignment
+        // Generate proof path for THIS log (inside the map)
+        const fullProof = MerkleProofGenerator.generateFullProof(topLevelTree, log.logId, log.logType);
+        
+        return {
           logId: log.logId,
           timestamp: log.timestamp,
           logType: log.logType,
           metadata: log.metadata,
-          hash: log.hash
-        })),
-        rootHash: subTree.getRootHash()
-      };
-    }
-
-    return {
-      version: '1.0',
-      timestamp: new Date().toISOString(),
-      topLevelRootHash: topLevelTree.getRootHash(),
-      subTrees: subTreesData,
-      statistics: topLevelTree.getStatistics()
+          hash: log.hash,
+          subTreeProof: fullProof.subTreeProof,      // Proof to sub-tree root
+          subTreeRoot: fullProof.subTreeRoot,        // Sub-tree root hash
+          topLevelProof: fullProof.topLevelProof,    // Proof from sub-tree root to top-level root
+          topLevelRoot: fullProof.topLevelRoot
+        };
+      })
     };
   }
+  
+  return {
+    version: '1.0',
+    timestamp: new Date().toISOString(),
+    topLevelRootHash: topLevelTree.getRootHash(),
+    subTrees: subTreesData,
+    statistics: topLevelTree.getStatistics()
+  };
+}
 
   // Deserialize JSON data back to tree
   static deserialize(data) {

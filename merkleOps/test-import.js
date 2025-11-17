@@ -36,9 +36,28 @@ MerkleImporter.importAndSave(
   merkletreePath
 );
 
+console.log('\n=== VERIFYING SAVED PROOFS ===\n');
+
+// Load the saved file and check if proofs exist
+const { MerklePersistence } = require('./merkle-persistence');
+
+const savedData = JSON.parse(fs.readFileSync(merkletreePath, 'utf8'));
+
+// Check if first log has proofPath
+for (const [logType, subTreeData] of Object.entries(savedData.subTrees)) {
+  if (subTreeData.logs.length > 0) {
+    const firstLog = subTreeData.logs[0];
+    if (firstLog.proofPath) {
+      console.log(`✓ ${logType}: Proofs saved! (${firstLog.proofPath.length} hashes)`);
+    } else {
+      console.log(`✗ ${logType}: No proofs saved!`);
+    }
+  }
+  break; // Just check first sub-tree
+}
+
 console.log('\n=== SAVING CONCAT HASH FILES ===\n');
 
-const { MerklePersistence } = require('./merkle-persistence');
 const concatResults = MerklePersistence.saveConcatHashFiles(
   result.tree, 
   epoch,

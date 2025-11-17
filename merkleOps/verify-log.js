@@ -3,6 +3,7 @@
 const fs = require('fs');
 const path = require('path');
 const { MerkleFileOps } = require('./MerkleFileOps');
+const { combineHashes } = require('./merkle-core'); 
 const crypto = require('crypto');
 
 // Get command line arguments
@@ -13,7 +14,7 @@ const logType = args[2];
 const epochId = parseInt(args[3]);
 
 const CONCAT_HASH_DIR = './concat_hashes';
-const MERKLE_TREE_DIR = './merkletree';
+const MERKLE_TRE_DIR = './merkletree';
 
 /**
  * Hash function
@@ -210,7 +211,7 @@ console.error(`Computed hash of raw log: ${computedHash}`);
 /**
  * FUNCTION 2: Fine-grained verification (Merkle proof)
  */
-function verifyFineGrained(logId, logType, epochId) {
+function verifyFineGrained(logId, logType, epochId, rawLog) {
   const result = {
     valid: true,
     method: 'fine',
@@ -219,8 +220,27 @@ function verifyFineGrained(logId, logType, epochId) {
     epochId: epochId,
     alert: null
   };
-
+  
   try {
+    // Step 1: Compute hash from raw log
+    const m = {};
+    for (const [key, value] of Object.entries(rawLog)) {
+      if (key == 'message') {
+        m[key] = value;
+      }
+    }
+
+    const data = JSON.stringify({
+      logId: "log-"+rawLog.id,
+      timestamp: rawLog.timestamp,
+      logType: rawLog.Type,
+      metadata: m
+    });
+
+    const computedHash = hash(data);
+    console.error(`[Fine] Computed hash from raw log: ${computedHash}`);
+
+    // Step 2: Load saved file (JSON only, no tree rebuild)
     const merkleTreePath = path.join(MERKLE_TRE_DIR, `merklebatch_${epochId}`);
 
     if (!fs.existsSync(merkleTreePath)) {
@@ -229,41 +249,129 @@ function verifyFineGrained(logId, logType, epochId) {
       return result;
     }
 
-    // Use existing MerkleFileOps
-    const proof = MerkleFileOps.generateAndVerifyProof(merkleTreePath, logId, logType);
+    const savedData = JSON.parse(fs.readFileSync(merkleTreePath, 'utf8'));
+    
+    // Step 3: Find stored log and get FULL proof path
+    let storedLog = null;
+    
+    if (savedData.subTrees && savedData.subTrees[logType]) {
+      const subTreeData = savedData.subTrees[logType];
+      storedLog = subTreeData.logs.find(log => log.logId === logId);
+    }
 
-    if (!proof) {
+    if (!storedLog) {
       result.valid = false;
-      result.error = 'Failed to generate proof - log may not exist';
+      result.error = `Log ${logId} not found in saved tree`;
       return result;
     }
 
-    result.merkleProof = {
-      leafHash: proof.proof.leafHash,
-      subTreeRoot: proof.proof.subTreeRoot,
-      topLevelRoot: proof.proof.topLevelRoot
-    };
-
-    // Check verification
-    if (!proof.verification.valid) {
+    if (!storedLog.subTreeProof || !storedLog.topLevelProof) {
       result.valid = false;
+      result.error = `No complete proof path saved for log ${logId}`;
+      return result;
+    }
+
+    console.error(`[Fine] Found stored log`);
+    console.error(`[Fine] Sub-tree proof: ${storedLog.subTreeProof.length} steps`);
+    console.error(`[Fine] Top-level proof: ${storedLog.topLevelProof.length} steps`);
+
+    // Step 4: Recompute sub-tree root using raw log hash
+    let currentHash = computedHash;
+    
+    console.error(`\n[Fine] === Recomputing Sub-Tree Root ===`);
+    console.error(`[Fine] Starting with raw log hash: ${currentHash.substring(0,16)}...`);
+    
+    for (let i = 0; i < storedLog.subTreeProof.length; i++) {
+      const step = storedLog.subTreeProof[i];
+      const oldHash = currentHash;
       
-      // Create Alert 2
+      if (step.position === 'left') {
+        currentHash = combineHashes(step.hash, currentHash);
+      } else {
+        currentHash = combineHashes(currentHash, step.hash);
+      }
+      
+      console.error(`[Fine] Step ${i+1}: combine with ${step.hash.substring(0,8)}... (${step.position}) → ${currentHash.substring(0,8)}...`);
+    }
+    
+    const recomputedSubTreeRoot = currentHash;
+    console.error(`[Fine] Recomputed sub-tree root: ${recomputedSubTreeRoot}`);
+    console.error(`[Fine] Expected sub-tree root:   ${storedLog.subTreeRoot}`);
+
+    // Step 5: Check if sub-tree root matches
+    if (recomputedSubTreeRoot !== storedLog.subTreeRoot) {
+      result.valid = false;
       result.alert = {
+        rawLog: data,
         severity: 'CRITICAL',
         alertType: 'LOG_TAMPERED',
         epochId: epochId,
         logType: logType,
         logId: logId,
-        message: `CRITICAL: Log ${logId} in epoch ${epochId} (type ${logType}) has been tampered`,
-        expectedHash: proof.proof.leafHash,
+        message: `CRITICAL: Raw log hash doesn't match - Log ${logId} was tampered`,
+        computedHash: computedHash,
+        storedHash: storedLog.hash,
+        recomputedSubTreeRoot: recomputedSubTreeRoot,
+        expectedSubTreeRoot: storedLog.subTreeRoot,
         timestamp: Date.now()
       };
+      return result;
     }
+
+    console.error(`[Fine] ✓ Sub-tree root matches!`);
+
+    // Step 6: Recompute TOP-LEVEL root using sub-tree root
+    currentHash = recomputedSubTreeRoot; // Start from sub-tree root
+    
+    console.error(`\n[Fine] === Recomputing Top-Level Root ===`);
+    console.error(`[Fine] Starting with sub-tree root: ${currentHash.substring(0,16)}...`);
+    
+    for (let i = 0; i < storedLog.topLevelProof.length; i++) {
+      const step = storedLog.topLevelProof[i];
+      const oldHash = currentHash;
+      
+      if (step.position === 'left') {
+        currentHash = combineHashes(step.hash, currentHash);
+      } else {
+        currentHash = combineHashes(currentHash, step.hash);
+      }
+      
+      console.error(`[Fine] Step ${i+1}: combine with ${step.hash.substring(0,8)}... (${step.position}) → ${currentHash.substring(0,8)}...`);
+    }
+    
+    const recomputedTopLevelRoot = currentHash;
+    console.error(`[Fine] Recomputed top-level root: ${recomputedTopLevelRoot}`);
+    console.error(`[Fine] Expected top-level root:   ${storedLog.topLevelRoot}`);
+    console.error(`[Fine] Saved file root:           ${savedData.topLevelRootHash}`);
+
+    // Step 7: Check if top-level root matches
+    if (recomputedTopLevelRoot !== storedLog.topLevelRoot) {
+      result.valid = false;
+      result.alert = {
+        rawLog: data,
+        severity: 'CRITICAL',
+        alertType: 'MERKLE_TREE_TAMPERED',
+        epochId: epochId,
+        logType: logType,
+        logId: logId,
+        message: `CRITICAL: Top-level Merkle root mismatch - Tree was tampered`,
+        recomputedRoot: recomputedTopLevelRoot,
+        expectedRoot: storedLog.topLevelRoot,
+        timestamp: Date.now()
+      };
+      return result;
+    }
+
+    console.error(`[Fine] ✓ Top-level root matches! Verification complete.`);
+    
+    result.valid = true;
+    result.recomputedRoot = recomputedTopLevelRoot;
+    result.expectedRoot = storedLog.topLevelRoot;
 
   } catch (error) {
     result.valid = false;
     result.error = error.message;
+    console.error('[Fine] Error:', error);
   }
 
   return result;
@@ -295,8 +403,25 @@ if (mode === 'coarse') {
   const logId = args[1];
   const logType = args[2];
   const epochId = parseInt(args[3]);
-  const result = verifyFineGrained(logId, logType, epochId);
-  console.log(JSON.stringify(result));
+  let rawLogJson = '';
+  
+  process.stdin.on('data', (chunk) => {
+    rawLogJson += chunk;
+  });
+  
+  process.stdin.on('end', () => {
+    try {
+      const rawLog = JSON.parse(rawLogJson.trim());
+      const result = verifyFineGrained(logId, logType, epochId, rawLog);
+      console.log(JSON.stringify(result));
+    } catch (error) {
+      console.log(JSON.stringify({
+        valid: false,
+        error: `Failed to parse raw log: ${error.message}`
+      }));
+    }
+  });
+
 } else {
   console.log(JSON.stringify({
     valid: false,

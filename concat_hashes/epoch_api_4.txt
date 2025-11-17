@@ -1,0 +1,7 @@
+{log id: log-3, hash value: 86f640cd50a8d057d3b8b1849dd4f2bf0b87c9127fab6d0a74761f8df6267d45}
+{log id: log-6, hash value: 1ae6353a02826aea5c7797cbe95a5a5d06c58f95558ebe569c8fb69f41bd2c4a}
+{log id: log-9, hash value: c71f1aa19ebed015fd2157de5bd48c76ddeda14904084799eba10e3ef8dc4a72}
+
+epoch id: 4
+log type: api
+hash value: 3ef20f05112d3b2fdcdde75d2c7aaed96a99ff4b25894a042c4224bc98092370
