@@ -439,19 +439,17 @@ public class LogServer {
                     // Coarse-grained failed - send Alert 1
                     if (coarse.alert != null) {
                         sendAlert(coarse.alert);
-                        System.out.println("\n🚨 ALERT 1 SENT: Raw log hash mismatch - concat hash mismatch");
+                        System.out.println("\nALERT 1 SENT: Raw log hash mismatch - concat hash mismatch");
                     }
                     
                     // Extract metadata for fine-grained check
                     String logId = extractJsonField(coarseResult, "logId");
                     String logType = extractJsonField(coarseResult, "logType");
                     String epochIdStr = extractJsonField(coarseResult, "epochId");
-                    
                     if (logId != null && logType != null && epochIdStr != null) {
                         int epochId = Integer.parseInt(epochIdStr);
-                        
                         // Step 2: Call fine-grained verification
-                        String fineResult = callNodeScript("fine", logId, logType, epochId);
+                        String fineResult = callNodeScript("fine", logId, logType, epochId, rawLogJson);
                         JSONResult fine = parseJSON(fineResult);
                         
                         System.out.println("Fine result: " + fineResult);
@@ -462,8 +460,10 @@ public class LogServer {
                                 "{\"valid\":true,\"method\":\"fine\",\"message\":\"Verified by Merkle proof (anomaly detected in concat)\"}"
                             );
                         } else {
+                            System.out.println(fine.alert);
                             // Actually tampered - send Alert 2
                             if (fine.alert != null) {
+                                System.out.println("after cond");
                                 sendAlert(fine.alert);
                                 System.out.println("\n🚨 ALERT 2 SENT: Specific log tampered (Merkle proof failed)");
                             }
@@ -614,15 +614,19 @@ public class LogServer {
         return json.length() - 1;
     }
 
-
-    private String callNodeScript(String mode, String logId, String logType, int epochId) 
+    private String callNodeScript(String mode, String logId, String logType, int epochId, String rawLogJson) 
         throws IOException, InterruptedException {
     ProcessBuilder pb = new ProcessBuilder(
         "node", "merkleOps/verify-log.js", mode, logId, logType, String.valueOf(epochId)
     );
     pb.redirectErrorStream(true);
-    
+
     Process process = pb.start();
+    
+    PrintWriter writer = new PrintWriter(process.getOutputStream());
+    writer.println(rawLogJson);
+    writer.flush();
+    writer.close();
     BufferedReader reader = new BufferedReader(
         new InputStreamReader(process.getInputStream())
     );
@@ -641,32 +645,67 @@ public class LogServer {
     System.out.println("\n========== ALERT ==========");
     System.out.println(alertJson);
     System.out.println("===========================\n");
+
+    sendAlertToSIEM(alertJson);
     }
+
+    private void sendAlertToSIEM(String alertJson) {
+    final String SIEM_HOST = "localhost";
+    final int SIEM_PORT = 9999;
+    
+    try {
+        Socket socket = new Socket(SIEM_HOST, SIEM_PORT);
+        PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
+        
+        // Send as HTTP POST
+        out.println("POST / HTTP/1.1");
+        out.println("Host: " + SIEM_HOST);
+        out.println("Content-Type: application/json");
+        out.println("Content-Length: " + alertJson.length());
+        out.println();
+        out.println(alertJson);
+        out.flush();
+        
+        socket.close();
+        
+        System.out.println("Alert sent to SIEM (" + SIEM_HOST + ":" + SIEM_PORT + ")");
+        
+    } catch (Exception e) {
+        System.err.println("Failed to send alert to SIEM: " + e.getMessage());
+    }
+}
     
     /**
      * Call JavaScript file with epoch value
      */
     private void callJavaScript(int epoch) throws IOException, NoSuchAlgorithmException {
+        System.out.println("\n=== CALLING JAVASCRIPT ===");
+        System.out.println("Epoch: " + epoch);
+        System.out.println("Command: node merkleOps/test-import.js " + epoch);
+        
         ProcessBuilder pb = new ProcessBuilder("node", "merkleOps/test-import.js", String.valueOf(epoch));
         pb.redirectErrorStream(true);
-    
-    Process process = pb.start();
-    
-    // Read output from JavaScript
-    /*BufferedReader reader = new BufferedReader(
-        new InputStreamReader(process.getInputStream()));
-    
-    StringBuilder output = new StringBuilder();
-    String line;
-    while ((line = reader.readLine()) != null) {
-        output.append(line);
-    }
-    
-    int exitCode = process.waitFor();
-    
-    if (exitCode != 0) {
-        throw new Exception("JavaScript execution failed with exit code: " + exitCode);
-    }*/
+        
+        Process process = pb.start();
+        
+        // UNCOMMENT THIS - We need to see JavaScript output!
+        BufferedReader reader = new BufferedReader(
+            new InputStreamReader(process.getInputStream())
+        );
+        
+        String line;
+        System.out.println("JavaScript Output:");
+        while ((line = reader.readLine()) != null) {
+            System.out.println("  JS: " + line);
+        }
+        
+        /*int exitCode = process.waitFor();
+        System.out.println("JavaScript exit code: " + exitCode);
+        
+        if (exitCode != 0) {
+            System.err.println("ERROR: JavaScript failed!");
+        }*/
+        System.out.println("=== JAVASCRIPT DONE ===\n");
     }
     
     /**
